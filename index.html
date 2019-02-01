@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
+    <title>Babylon - Getting Started</title>
+    <style>
+      html,
+      body {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <!-- Link to the last version of BabylonJS -->
+    <script src="https://preview.babylonjs.com/babylon.js"></script>
+    <!-- Link to the last version of BabylonJS loaders to enable loading filetypes such as .gltf -->
+    <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <!-- Link to pep.js to ensure pointer events work consistently in all browsers -->
+    <script src="https://code.jquery.com/pep/0.4.1/pep.js"></script>
+  </head>
+  <body>
+    <canvas width="1600" height="1600" id="renderCanvas"></canvas>
+    <script>
+      const canvas = document.getElementById("renderCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.font = "20px Arial";
+      // ctx.moveTo(200, 10);
+      // ctx.lineTo(400, 10);
+      // ctx.lineTo(500, 183);
+      // ctx.lineTo(400, 356);
+      // ctx.lineTo(200, 356);
+      // ctx.lineTo(100, 183);
+      // ctx.lineTo(200, 10);
+      // ctx.stroke();
+
+      const genHexo = (x0, y0, radius) => {
+        const vertexes = [];
+        for (let i = 0; i < 7; i++) {
+          const vertex = vertexCoords(((i + 1) * Math.PI) / 3, radius, {
+            x0,
+            y0
+          });
+          // console.log(vertex);
+          vertexes.push(vertex);
+        }
+        return vertexes;
+      };
+
+      const vertexCoords = (angle, radius, { x0, y0 }) => {
+        const radiusX = Math.sin(angle) * radius;
+        const radiusY = Math.cos(angle) * radius;
+
+        const x = x0 + radiusX;
+        const y = y0 + radiusY;
+
+        return { x, y };
+      };
+
+      const drawHexo = (x0, y0, radius, ctx) => {
+        const hexo = genHexo(x0, y0, radius);
+        ctx.moveTo(x0, y0);
+        ctx.fillRect(x0, y0, 2, 2);
+        ctx.fillText(6, x0 + 4, y0 + 20);
+        // ctx.beginPath();
+        // ctx.arc(x0, y0, radius, 0, 2 * Math.PI);
+        ctx.moveTo(hexo[0].x, hexo[0].y);
+        hexo.map(vertex => {
+          ctx.lineTo(vertex.x, vertex.y);
+        });
+        ctx.stroke();
+        return { hexo, x0, y0 };
+      };
+
+      const genAdjascentHexo = (vert1, vert2, x0, y0) => {
+        const longestX = (vert1.x + vert2.x) / 2;
+        const longestY = (vert1.y + vert2.y) / 2;
+
+        const dx0 = x0 - longestX;
+        const dy0 = y0 - longestY;
+
+        const nextX = x0 + dx0 * 2;
+        const nextY = y0 + dy0 * 2;
+        // console.log(x0, y0, nextX, nextY);
+        // console.log("vcvsdfs", dx0, nextY);
+        return { nextX, nextY };
+      };
+
+      const drawAdjascentHexos = (hexo, x0, y0) => {
+        const pairs = hexo.reduce((acc, curr, index, arr) => {
+          if (arr[index + 1]) {
+            const pair = [curr, arr[index + 1]];
+            acc.push(pair);
+          }
+          return acc;
+        }, []);
+        pairs.map(pair => {
+          console.log("paris", pair);
+          const next0coords = genAdjascentHexo(pair[0], pair[1], x0, y0);
+          drawHexo(next0coords.nextX, next0coords.nextY, 173, ctx);
+        });
+      };
+
+      let { hexo, x0, y0 } = drawHexo(600, 573, 173, ctx);
+      drawAdjascentHexos(hexo, x0, y0);
+
+      // let { hexo, x0, y0 } = drawHexo(
+      //   next0coords.nextX,
+      //   next0coords.nextY,
+      //   173,
+      //   ctx
+      // );
+    </script>
+  </body>
+</html>
